@@ -39,40 +39,25 @@ def seed_db():
     db.session.add_all(users)
     db.session.commit()
 
-#     # Create an instance of the Card model in memory
-#     cards = [
-#         Card(
-#             title="Start the project",
-#             description="Stage 1 - Create an ERD",
-#             status="Done",
-#             date_created=date.today(),
-#             # because relationship is set, you can have user instead of user_id, then users[0].id is shortened
-#             user=users[0]
-#         ),
-#         Card(
-#             title="ORM Queries",
-#             description="Stage 2 - Implement several queries",
-#             status="In Progress",
-#             date_created=date.today(),
-#             user=users[0]
-#         ),
-#         Card(
-#             title="Marshmallow",
-#             description="Stage 3 - Implement jsonify of models",
-#             status="In Progress",
-#             date_created=date.today(),
-#             user=users[1]
-#         ),
-#     ]
+    # Create an instance of the Property model in memory
+    properties = [
+        Property(
+            address="123 Charming Ave"
+        ),
 
-#     # Truncate the Card table
-#     db.session.query(Card).delete()
+        Property(
+            address="21 Jump St"
+        )
+    ]
 
-#     # Add the card to the session (transaction)
-#     db.session.add_all(cards)
+    # Truncate the Card table
+    db.session.query(Property).delete()
 
-#     # Commit the transaction to the database
-#     db.session.commit()
+    # Add the card to the session (transaction)
+    db.session.add_all(properties)
+
+    # Commit the transaction to the database
+    db.session.commit()
 
 #     comments = [
 #         Comment(
