@@ -1,6 +1,7 @@
 from flask import Blueprint
 from init import db, bcrypt
 from models.user import User
+from models.properties import Property
 
 cli_bp = Blueprint('db', __name__)
 
