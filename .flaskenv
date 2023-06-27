@@ -1,2 +1,2 @@
-FLASK_APP=main
+FLASK_APP=main:setup
 FLASK_DEBUG=true
