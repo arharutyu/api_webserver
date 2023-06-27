@@ -1,7 +1,8 @@
 from flask import Blueprint
 from init import db, bcrypt
 from models.user import User
-from models.properties import Property
+from models.property import Property
+from models.propertyuser import PropertyUser
 
 cli_bp = Blueprint('db', __name__)
 
@@ -16,7 +17,7 @@ def create_db():
     db.drop_all()
     print("Tables dropped successfully")
 
-@cli_bp.cli.command("seed")
+@cli_bp.cli.command("seedu")
 def seed_db():
     users = [
         User(
@@ -39,6 +40,8 @@ def seed_db():
     db.session.add_all(users)
     db.session.commit()
 
+@cli_bp.cli.command("seedp")
+def seed_prop():
     # Create an instance of the Property model in memory
     properties = [
         Property(
@@ -50,39 +53,28 @@ def seed_db():
         )
     ]
 
-    # Truncate the Card table
     db.session.query(Property).delete()
-
-    # Add the card to the session (transaction)
     db.session.add_all(properties)
-
-    # Commit the transaction to the database
     db.session.commit()
 
-#     comments = [
-#         Comment(
-#             message="Comment 1",
-#             date_created=date.today(),
-#             user=users[0],
-#             card=cards[1]
-#         ),
-#         Comment(
-#             message="Comment 2",
-#             date_created=date.today(),
-#             user=users[1],
-#             card=cards[1]
-#         ),
-#         Comment(
-#             message="Comment 3",
-#             date_created=date.today(),
-#             user=users[1],
-#             card=cards[0]
-#         )
-#     ]
+@cli_bp.cli.command("seedpu")
+def seed_propu():
+    propertiesusers = [
+        PropertyUser(
+            role="Property Manager",
+            user=users[0],
+            property=properties[0]
+        ),
+        PropertyUser(
+            role="Property Manager",
+            user=users[0],
+            property=properties[0]
+        )
+    ]
 
-#     db.session.query(Comment).delete()
-#     db.session.add_all(comments)
-#     db.session.commit()
+    db.session.query(PropertyUser).delete()
+    db.session.add_all(propertiesusers)
+    db.session.commit()
 
-#     print("Models seeded")
+    print("Models seeded")
 

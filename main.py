@@ -1,7 +1,5 @@
 from flask import Flask
-from blueprints.cli_bp import cli_bp
 from os import environ
-from flask_sqlalchemy import SQLAlchemy
 from init import db, ma, bcrypt, jwt
 from blueprints import registerable_bp
 
