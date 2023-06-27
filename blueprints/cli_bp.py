@@ -3,6 +3,8 @@ from init import db, bcrypt
 from models.user import User
 from models.property import Property
 from models.propertyuser import PropertyUser
+from models.item import Item
+from datetime import date
 
 cli_bp = Blueprint('db', __name__)
 
@@ -17,7 +19,7 @@ def create_db():
     db.drop_all()
     print("Tables dropped successfully")
 
-@cli_bp.cli.command("seedu")
+@cli_bp.cli.command("seed")
 def seed_db():
     users = [
         User(
@@ -40,8 +42,6 @@ def seed_db():
     db.session.add_all(users)
     db.session.commit()
 
-@cli_bp.cli.command("seedp")
-def seed_prop():
     # Create an instance of the Property model in memory
     properties = [
         Property(
@@ -57,8 +57,6 @@ def seed_prop():
     db.session.add_all(properties)
     db.session.commit()
 
-@cli_bp.cli.command("seedpu")
-def seed_propu():
     propertiesusers = [
         PropertyUser(
             role="Property Manager",
@@ -74,6 +72,20 @@ def seed_propu():
 
     db.session.query(PropertyUser).delete()
     db.session.add_all(propertiesusers)
+    db.session.commit()
+
+    items = [
+        Item(
+            item_name = "Item1",
+            item_desc = "Item 1 description",
+            date_created = date.today(),
+            user=users[0],
+            property=properties[0]
+        )
+    ]
+
+    db.session.query(Item).delete()
+    db.session.add_all(items)
     db.session.commit()
 
     print("Models seeded")
