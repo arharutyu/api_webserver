@@ -15,24 +15,28 @@ def create_db():
     db.drop_all()
     print("Tables dropped successfully")
 
-# @cli_bp.cli.command("seed")
-# def seed_db():
-#     users = [
-#         User(
-#             email='admin@spam.com',
-#             password=bcrypt.generate_password_hash('spinynorman').decode('utf-8'),
-#             is_admin=True
-#         ),
-#         User(
-#             name='John Cleese',
-#             email='cleese@spam.com',
-#             password=bcrypt.generate_password_hash('tisbutascratch').decode('utf-8')
-#         )
-#     ]
+@cli_bp.cli.command("seed")
+def seed_db():
+    users = [
+        User(
+            first_name='Test',
+            last_name='Admin',
+            email='admin@test.com',
+            password=bcrypt.generate_password_hash('admin').decode('utf-8'),
+            is_admin=True
+        ),
+        User(
+            first_name='Test',
+            last_name='User',
+            email='user@test.com',
+            password=bcrypt.generate_password_hash('user').decode('utf-8'),
+            is_admin=False
+        )
+    ]
 
-#     db.session.query(User).delete()
-#     db.session.add_all(users)
-#     db.session.commit()
+    db.session.query(User).delete()
+    db.session.add_all(users)
+    db.session.commit()
 
 #     # Create an instance of the Card model in memory
 #     cards = [
