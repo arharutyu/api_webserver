@@ -16,3 +16,9 @@ class User(db.Model):
         back_populates='user',
         cascade="all, delete"
     )
+
+    items = db.relationship(
+        "Item",
+        back_populates="user",
+        cascade="all, delete"
+    )

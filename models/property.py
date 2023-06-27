@@ -6,9 +6,14 @@ class Property(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column(db.String, nullable=False, unique=True)
 
-
     propertiesusers = db.relationship(
         "PropertyUser",
+        back_populates="property",
+        cascade="all, delete"
+    )
+
+    items = db.relationship(
+        "Item",
         back_populates="property",
         cascade="all, delete"
     )
