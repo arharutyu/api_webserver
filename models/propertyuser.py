@@ -10,9 +10,6 @@ class PropertyUser(db.Model):
     role = db.Column(db.String())
 
     # two foreign keys
-    # user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    # property_id = db.Column(db.Integer, db.ForeignKey("properties.id"), nullable=False)
-
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'))
     user = db.relationship('User', back_populates='propertiesusers')
 

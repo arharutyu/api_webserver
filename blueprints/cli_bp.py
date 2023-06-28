@@ -65,8 +65,8 @@ def seed_db():
             property=properties[0]
         ),
         PropertyUser(
-            role="Property Manager",
-            user=users[0],
+            role="Tenant",
+            user=users[1],
             property=properties[0]
         )
     ]
