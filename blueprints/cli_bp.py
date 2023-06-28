@@ -4,6 +4,7 @@ from models.user import User
 from models.property import Property
 from models.propertyuser import PropertyUser
 from models.item import Item
+from models.comment import Comment
 from datetime import date
 
 cli_bp = Blueprint('db', __name__)

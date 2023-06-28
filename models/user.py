@@ -22,3 +22,5 @@ class User(db.Model):
         back_populates="user",
         cascade="all, delete"
     )
+
+    comments = db.relationship('Comment', back_populates='items')

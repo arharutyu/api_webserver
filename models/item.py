@@ -13,3 +13,5 @@ class Item(db.Model):
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User', back_populates='items')
+
+    comment = db.relationship('Comment', back_populates='items')
