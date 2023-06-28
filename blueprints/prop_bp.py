@@ -5,7 +5,7 @@ from models.propertyuser import PropertyUser
 from schemas.role_schema import RoleSchema
 from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from blueprints.auth_bp import admin_required
+from blueprints.auth_bp import admin_required, access_required
 
 prop_bp = Blueprint('prop', __name__)
 
@@ -64,13 +64,32 @@ def get_prop(prop_id):
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['GET'])
 @jwt_required()
 def get_roles(prop_id):
+   access_required(prop_id)
    stmt = db.select(Property).filter_by(id=prop_id)
    prop = db.session.scalar(stmt)
-   user_id = get_jwt_identity()
-   stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=user_id)
+   
+   stmt = db.select(PropertyUser).filter_by(property_id=prop_id)
    propuser = db.session.scalars(stmt)
-   if prop and propuser:
-      admin_required()
+   
+   if prop:
       return [PropertySchema().dump(prop), RoleSchema(many=True).dump(propuser)]
    else:
       return {'error': 'Property not found'}, 404
+   
+# @prop_bp.route('/property/<int:prop_id>/roles', methods=['PUT'])
+# @jwt_required()
+# def add_roles(prop_id):
+#     try:
+#         new_role = RoleSchema().load(request.json)
+#         propuser = PropertyUser(
+#             role=new_role['role']
+#         )
+
+#         # Add and commit the new prop
+#         db.session.add(propuser)
+#         db.session.commit()
+
+#         return RoleSchema(many=True).dump(propuser), 201
+    
+#     except:
+#         return {'error': 'Something went wrong'}

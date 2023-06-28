@@ -28,14 +28,16 @@ def seed_db():
             last_name='Admin',
             email='admin@test.com',
             password=bcrypt.generate_password_hash('admin').decode('utf-8'),
-            is_admin=True
+            is_admin=True,
+            access = True
         ),
         User(
             first_name='Test',
             last_name='User',
             email='user@test.com',
             password=bcrypt.generate_password_hash('user').decode('utf-8'),
-            is_admin=False
+            is_admin=False,
+            access=False
         )
     ]
 
