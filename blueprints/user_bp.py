@@ -45,7 +45,7 @@ def all_users():
 
 @user_bp.route('/users/<int:user_id>', methods=['PUT', 'PATCH'])
 @jwt_required()
-def update_card(user_id):
+def update_user(user_id):
   stmt = db.select(User).filter_by(id=user_id)
   user = db.session.scalar(stmt)
   user_info = UserSchema().load(request.json)
