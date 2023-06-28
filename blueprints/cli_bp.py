@@ -89,5 +89,17 @@ def seed_db():
     db.session.add_all(items)
     db.session.commit()
 
-    print("Models seeded")
+    comments = [
+        Comment(
+            comment = "test comment",
+            date_created = date.today(),
+            items = items[0],
+            user = users[0]
+        )
+    ]
 
+    db.session.query(Comment).delete()
+    db.session.add_all(comments)
+    db.session.commit()
+
+    print("Models seeded")
