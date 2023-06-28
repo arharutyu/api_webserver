@@ -3,9 +3,12 @@ from models.property import Property
 from schemas.property_schema import PropertySchema
 from models.propertyuser import PropertyUser
 from schemas.role_schema import RoleSchema
+from models.item import Item
+from schemas.item_schema import ItemSchema
 from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from blueprints.auth_bp import admin_required, access_required
+from datetime import date
 
 prop_bp = Blueprint('prop', __name__)
 
@@ -70,20 +73,23 @@ def get_roles(prop_id):
    
    stmt = db.select(PropertyUser).filter_by(property_id=prop_id)
    propuser = db.session.scalars(stmt)
-   
+
    if prop:
       return [PropertySchema().dump(prop), RoleSchema(many=True).dump(propuser)]
    else:
       return {'error': 'Property not found'}, 404
    
-# @prop_bp.route('/property/<int:prop_id>/roles', methods=['PUT'])
+# @prop_bp.route('/property/<int:prop_id>/roles', methods=['POST'])
 # @jwt_required()
 # def add_roles(prop_id):
+#     admin_required()
 #     try:
 #         new_role = RoleSchema().load(request.json)
 #         propuser = PropertyUser(
-#             role=new_role['role']
-#         )
+#             role=new_role['role'],
+#             user=new_role['user.id'])
+            
+        
 
 #         # Add and commit the new prop
 #         db.session.add(propuser)
@@ -92,4 +98,32 @@ def get_roles(prop_id):
 #         return RoleSchema(many=True).dump(propuser), 201
     
 #     except:
-#         return {'error': 'Something went wrong'}
+#         return
+
+
+
+@prop_bp.route('/property/<int:prop_id>/inventory', methods=['GET'])
+@jwt_required()
+def get_items(prop_id):
+    access_required(prop_id)
+    stmt = db.select(Item).filter_by(property_id=prop_id)
+    items = db.session.scalars(stmt)
+    return ItemSchema(many=True, only=['item_name', 'id']).dumps(items)
+
+@prop_bp.route('/property/<int:prop_id>/inventory', methods=['POST'])
+@jwt_required()
+def add_item(prop_id):
+    access_required(prop_id)
+    item_info = ItemSchema().load(request.json)
+    item = Item(
+       item_name = item_info['item_name'],
+       item_desc = item_info['item_desc'],
+       date_created = date.today(),
+       user_id = get_jwt_identity(),
+       property_id = prop_id
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return ItemSchema(exclude=['user']).dump(item)

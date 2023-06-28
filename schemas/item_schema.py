@@ -5,7 +5,7 @@ class ItemSchema(ma.Schema):
     class Meta:
         user = fields.Nested('UserSchema', only=['first_name', 'last_name'])
 
-        fields = ('item_name', 'user')
+        fields = ('item_name', 'item_desc', 'id', 'user')
 
 item_schema = ItemSchema()
 itemss_schema = ItemSchema(many=True)

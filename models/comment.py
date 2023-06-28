@@ -4,7 +4,7 @@ class Comment(db.Model):
     __tablename__ = 'comments'
 
     id = db.Column(db.Integer, primary_key=True)
-    comment = db.Column(db.Text())
+    comment = db.Column(db.Text(), nullable=False)
     date_created = db.Column(db.Date())
 
     item_id = db.Column(db.Integer(), db.ForeignKey('items.id', ondelete='CASCADE'))
