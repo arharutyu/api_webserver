@@ -38,6 +38,27 @@ def register():
 @user_bp.route('/users')
 @jwt_required()
 def all_users():
+    admin_required()
     stmt = db.select(User)
     users = db.session.scalars(stmt)
     return UserSchema(many=True, exclude=['password']).dump(users)
+
+@user_bp.route('/users/<int:user_id>', methods=['PUT', 'PATCH'])
+@jwt_required()
+def update_card(user_id):
+  stmt = db.select(User).filter_by(id=user_id)
+  user = db.session.scalar(stmt)
+  user_info = UserSchema().load(request.json)
+  if user:
+    admin_required()
+    user.first_name = user_info.get('first_name', user.first_name)
+    user.last_name = user_info.get('last_name', user.last_name)
+    user.email = user_info.get('email', user.email)
+    user.password = bcrypt.generate_password_hash(user_info.get('password', user.password)).decode('utf-8')
+    user.is_admin = user_info.get('is_admin', user.is_admin)
+
+    db.session.commit()
+    return UserSchema(exclude=['password']).dump(user), 201
+  
+  else:
+    return {'error': 'User not found'}, 404
