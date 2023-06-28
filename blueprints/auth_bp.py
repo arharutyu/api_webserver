@@ -1,10 +1,11 @@
 from flask import Blueprint, request, abort
 from datetime import timedelta
 from models.user import User
+from models.propertyuser import PropertyUser
 from schemas.user_schema import UserSchema
 from init import db, bcrypt
 from sqlalchemy.exc import IntegrityError
-from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+from flask_jwt_extended import create_access_token, get_jwt_identity
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -15,7 +16,16 @@ def admin_required():
   if not (user and user.is_admin):
     abort(401, description="You must be an admin.")
 
+def access_required(prop_id):
+  user_id = get_jwt_identity()
+  stmt = db.select(User).filter_by(id=user_id)
+  user = db.session.scalar(stmt)
 
+  stmt = db.Select(PropertyUser).filter_by(property_id=prop_id, id=user_id)
+  role = db.session.scalars(stmt).all()
+
+  if not (user and (user.is_admin or user.access or len(role)>0)):
+    abort(401, description="You don't have access to this resource.")
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -33,9 +43,4 @@ def login():
 
 
 
-# def admin_or_owner_required(owner_id):
-#   user_id = get_jwt_identity()
-#   stmt = db.select(User).filter_by(id=user_id)
-#   user = db.session.scalar(stmt)
-#   if not (user and (user.is_admin or user_id == owner_id)):
-#     abort(401, description="You must be an admin or the owner")
+

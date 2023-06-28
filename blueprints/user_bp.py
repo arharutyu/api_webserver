@@ -56,6 +56,7 @@ def update_card(user_id):
     user.email = user_info.get('email', user.email)
     user.password = bcrypt.generate_password_hash(user_info.get('password', user.password)).decode('utf-8')
     user.is_admin = user_info.get('is_admin', user.is_admin)
+    user.access = user_info.get('access', user.access)
 
     db.session.commit()
     return UserSchema(exclude=['password']).dump(user), 201
