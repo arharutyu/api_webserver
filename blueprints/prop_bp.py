@@ -108,7 +108,7 @@ def get_items(prop_id):
     access_required(prop_id)
     stmt = db.select(Item).filter_by(property_id=prop_id)
     items = db.session.scalars(stmt)
-    return ItemSchema(many=True, only=['item_name', 'id']).dumps(items)
+    return ItemSchema(many=True, only=['item_name', 'id']).dump(items)
 
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['POST'])
 @jwt_required()

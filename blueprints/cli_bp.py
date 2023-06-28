@@ -79,8 +79,22 @@ def seed_db():
 
     items = [
         Item(
-            item_name = "Item1",
-            item_desc = "Item 1 description",
+            item_name = "Teapot",
+            item_desc = "Short and stout",
+            date_created = date.today(),
+            user=users[0],
+            property=properties[0]
+        ),
+        Item(
+            item_name = "Dinglehopper",
+            item_desc = "Three pronged, silver.",
+            date_created = date.today(),
+            user=users[0],
+            property=properties[1]
+        ),
+        Item(
+            item_name = "Sacred Waterbending Scroll",
+            item_desc = "Signs of wear.",
             date_created = date.today(),
             user=users[0],
             property=properties[0]
@@ -93,11 +107,29 @@ def seed_db():
 
     comments = [
         Comment(
-            comment = "test comment",
+            comment = "testing",
             date_created = date.today(),
             items = items[0],
             user = users[0]
-        )
+        ),
+        Comment(
+            comment = "one",
+            date_created = date.today(),
+            items = items[1],
+            user = users[0]
+        ),
+        Comment(
+            comment = "two",
+            date_created = date.today(),
+            items = items[2],
+            user = users[0]
+        ),
+        Comment(
+            comment = "checkcheck",
+            date_created = date.today(),
+            items = items[0],
+            user = users[0]
+        ),
     ]
 
     db.session.query(Comment).delete()
