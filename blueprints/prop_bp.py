@@ -1,8 +1,10 @@
 from flask import Blueprint, request, abort
 from models.property import Property
 from schemas.property_schema import PropertySchema
+from models.propertyuser import PropertyUser
+from schemas.role_schema import RoleSchema
 from init import db
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from blueprints.auth_bp import admin_required
 
 prop_bp = Blueprint('prop', __name__)
@@ -48,3 +50,27 @@ def delete_prop(prop_id):
     return {}, 200
   else:
     return {'error': 'Property not found'}, 404
+  
+@prop_bp.route('/property/<int:prop_id>', methods=['GET'])
+@jwt_required()
+def get_prop(prop_id):
+  stmt = db.select(Property).filter_by(id=prop_id)
+  prop = db.session.scalar(stmt)
+  if prop:
+    return PropertySchema().dump(prop), 201
+  else:
+    return {'error': 'Property not found'}, 404
+  
+@prop_bp.route('/property/<int:prop_id>/roles', methods=['GET'])
+@jwt_required()
+def get_roles(prop_id):
+   stmt = db.select(Property).filter_by(id=prop_id)
+   prop = db.session.scalar(stmt)
+   user_id = get_jwt_identity()
+   stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=user_id)
+   propuser = db.session.scalars(stmt)
+   if prop and propuser:
+      admin_required()
+      return [PropertySchema().dump(prop), RoleSchema(many=True).dump(propuser)]
+   else:
+      return {'error': 'Property not found'}, 404
