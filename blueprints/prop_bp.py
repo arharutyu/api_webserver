@@ -20,7 +20,7 @@ def new_prop():
             address=prop_info['address']
         )
 
-        # Add and commit the new user
+        # Add and commit the new prop
         db.session.add(prop)
         db.session.commit()
 
@@ -35,3 +35,16 @@ def all_props():
     stmt = db.select(Property)
     props = db.session.scalars(stmt)
     return PropertySchema(many=True).dump(props)
+
+@prop_bp.route('/property/<int:prop_id>', methods=['DELETE'])
+@jwt_required()
+def delete_prop(prop_id):
+  stmt = db.select(Property).filter_by(id=prop_id)
+  prop = db.session.scalar(stmt)
+  if prop:
+    admin_required()
+    db.session.delete(prop)
+    db.session.commit()
+    return {}, 200
+  else:
+    return {'error': 'Property not found'}, 404
