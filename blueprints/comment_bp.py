@@ -17,9 +17,10 @@ comment_bp = Blueprint('comment', __name__)
 @comment_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['GET'])
 @jwt_required()
 def all_comments(prop_id, item_id):
-    stmt = db.select(Comment).filter_by(item_id=item_id)
-    comments = db.session.scalars(stmt)
-    return CommentSchema(many=True).dump(comments)
+    access_required(prop_id)
+    stmt = db.select(Item).filter_by(id=item_id)
+    items = db.session.scalars(stmt)
+    return ItemSchema(many=True).dump(items)
 
 @comment_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['POST'])
 @jwt_required()
@@ -36,5 +37,7 @@ def post_comment(prop_id, item_id):
     db.session.add(comment)
     db.session.commit()
 
+    stmt = db.select(Item).filter_by(id=item_id)
+    item = db.session.scalars(stmt)
 
-    return CommentSchema().dump(comment)
+    return ItemSchema().dump(item)
