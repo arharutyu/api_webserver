@@ -96,7 +96,7 @@ def get_roles(prop_id):
    else:
       return {'error': 'Property not found'}, 404
    
-@prop_bp.route('/property/<int:prop_id>/roles', methods=['POST'])
+@prop_bp.route('/property/<int:prop_id>/roles', methods=['POST', 'PUT', 'PATCH'])
 @jwt_required()
 def add_roles(prop_id):
     admin_required()
@@ -152,3 +152,17 @@ def add_item(prop_id):
     db.session.commit()
 
     return ItemSchema(exclude=['user']).dump(item)
+
+@prop_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['DELETE'])
+@jwt_required()
+def delete_item(prop_id, item_id):
+  stmt = db.select(Item).filter_by(id=item_id)
+  item = db.session.scalar(stmt)  
+
+  if item:
+    admin_required()
+    db.session.delete(item)
+    db.session.commit()
+    return {}, 200
+  else:
+    return {'error': 'Item not found in this property inventory'}, 404
