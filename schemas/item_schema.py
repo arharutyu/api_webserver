@@ -4,7 +4,7 @@ from marshmallow.validate import Length, Regexp, And
 
 class ItemSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=['first_name', 'last_name'])
-    comments = fields.List(fields.Nested('CommentSchema', exclude=['user', 'item']))
+    comments = fields.List(fields.Nested('CommentSchema', exclude=['item']))
     item_name = fields.String(required=True, validate=And(
      Length(min=3, error='Title must be at least 3 characters long'),
      Regexp('^[a-zA-Z0-9 ]+$', error='Only letters, numbers, and spaces are allowed')
