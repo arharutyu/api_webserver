@@ -1,6 +1,8 @@
 from init import ma 
+from marshmallow import fields
 
 class PropertySchema(ma.Schema):
+    address = fields.String(required=True)
     class Meta:
         fields = ('address', 'id')
 
