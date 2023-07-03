@@ -1,11 +1,12 @@
 from flask import Blueprint, request, abort
 from datetime import timedelta
 from models.user import User
-from schemas.user_schema import UserSchema
+from schemas.user_schema import UserSchema, user_schema
 from init import db, bcrypt
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required
 from blueprints.auth_bp import admin_required, access_required
+from marshmallow.exceptions import ValidationError
 
 user_bp = Blueprint('user', __name__)
 
@@ -16,13 +17,18 @@ def register():
     try:
         # Parse, sanitize and validate the incoming JSON data
         # via the schema
-        user_info = UserSchema().load(request.json)
+        errors = user_schema.validate(request.json)
+        if errors:
+           return {'error': errors}, 409
+        user_info = user_schema.load(request.json)
         # Create a new User model instance with the schema data
         user = User(
             email=user_info['email'],
             password=bcrypt.generate_password_hash(user_info['password']).decode('utf-8'),
             first_name=user_info['first_name'],
-            last_name=user_info['last_name']
+            last_name=user_info['last_name'],
+            is_admin=user_info['is_admin'],
+            access=user_info['access']
         )
 
         # Add and commit the new user
@@ -33,6 +39,7 @@ def register():
         return UserSchema(exclude=['password']).dump(user), 201
     except IntegrityError:
         return {'error': 'Email address already in use'}, 409
+
 
 
 @user_bp.route('/users')
