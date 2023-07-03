@@ -13,6 +13,7 @@ from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from blueprints.auth_bp import admin_required, access_required, role_required
 from datetime import date
+from marshmallow import ValidationError
 
 prop_bp = Blueprint('prop', __name__)
 
@@ -101,18 +102,21 @@ def get_roles(prop_id):
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['POST', 'PUT', 'PATCH'])
 @jwt_required()
 def add_roles(prop_id):
-    access_required()
-    new_role = AddRoleSchema().load(request.json)
-    propuser = PropertyUser(
-            role=new_role['role'],
-            user_id=new_role['user_id'],
-            property_id = prop_id)   
+    try:
+        access_required()
+        new_role = AddRoleSchema().load(request.json)
+        propuser = PropertyUser(
+                role=new_role['role'],
+                user_id=new_role['user_id'],
+                property_id = prop_id)   
 
-        # Add and commit the new prop
-    db.session.add(propuser)
-    db.session.commit()
+            # Add and commit the new prop
+        db.session.add(propuser)
+        db.session.commit()
 
-    return RoleSchema().dump(propuser), 201
+        return RoleSchema().dump(propuser), 201
+    except ValidationError as err:
+       return {"error": err.messages}
 
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['DELETE'])
 @jwt_required()
@@ -124,7 +128,7 @@ def delete_role(prop_id):
     access_required()
     db.session.delete(role)
     db.session.commit()
-    return {}, 200
+    return {"Success": "User role deleted from this property"}, 200
   else:
     return {'error': 'User not found to have a role in this property'}, 404
 
