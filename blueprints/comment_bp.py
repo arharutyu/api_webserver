@@ -1,15 +1,11 @@
-from flask import Blueprint, request, abort
-from models.property import Property
-from schemas.property_schema import PropertySchema
-from models.propertyuser import PropertyUser
-from schemas.role_schema import RoleSchema
+from flask import Blueprint, request
 from models.item import Item
 from schemas.item_schema import ItemSchema
 from models.comment import Comment
 from schemas.comment_schema import CommentSchema
 from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from blueprints.auth_bp import admin_required, access_required, role_required
+from blueprints.auth_bp import access_required, role_required
 from datetime import date
 from marshmallow import ValidationError
 
@@ -30,7 +26,6 @@ def check_comment_item(item_id, comment_id):
         return True
     else:
         return False
-
 
 @comment_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['GET'])
 @jwt_required()
