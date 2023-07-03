@@ -10,13 +10,21 @@ class RoleSchema(ma.Schema):
   role = fields.String(load_default=VALID_ROLES[0])
   
 
-  @validates_schema()
-  def validate_status(self, data, **kwargs):
-    role = [x for x in VALID_ROLES if x.upper() == data['role'].upper()]
-    if len(role) == 0:
-       raise ValidationError(f'Status must be one of: {VALID_ROLES}')
+  # @validates_schema()
+  # def validate_status(self, data, **kwargs):
+  #   role = [x for x in VALID_ROLES if x.upper() == data['role'].upper()]
+  #   if len(role) == 0:
+  #      raise ValidationError(f'Status must be one of: {VALID_ROLES}')
     
-    data['role'] = role[0]
+  #   data['role'] = role[0]
     
   class Meta:
     fields = ('user', 'role')
+
+class AddRoleSchema(ma.Schema):
+  user = fields.Nested('UserSchema', only=['id'])
+  property = fields.Nested('PropertySchema')
+  role = fields.String()
+    
+  class Meta:
+    fields = ('user_id', 'role')
