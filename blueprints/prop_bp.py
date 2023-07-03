@@ -101,11 +101,6 @@ def get_roles(prop_id):
 def add_roles(prop_id):
     admin_required()
     new_role = AddRoleSchema().load(request.json)
-    # new_user_id = new_role['user_id']
-
-    # stmt = db.select(User).filter_by(id=new_user_id)
-    # new_user = db.session.scalar(stmt)
-
     propuser = PropertyUser(
             role=new_role['role'],
             user_id=new_role['user_id'],
@@ -116,6 +111,20 @@ def add_roles(prop_id):
     db.session.commit()
 
     return RoleSchema().dump(propuser), 201
+
+@prop_bp.route('/property/<int:prop_id>/roles', methods=['DELETE'])
+@jwt_required()
+def delete_role(prop_id):
+  del_role = AddRoleSchema(only=["user_id"]).load(request.json)
+  stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=del_role['user_id'])
+  role = db.session.scalar(stmt)
+  if role:
+    admin_required()
+    db.session.delete(role)
+    db.session.commit()
+    return {}, 200
+  else:
+    return {'error': 'User not found to have a role in this property'}, 404
 
 
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['GET'])
