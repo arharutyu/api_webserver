@@ -4,7 +4,7 @@ from schemas.property_schema import PropertySchema
 from models.propertyuser import PropertyUser
 from schemas.role_schema import RoleSchema, AddRoleSchema
 from models.item import Item
-from schemas.item_schema import ItemSchema
+from schemas.item_schema import ItemSchema, PatchItemSchema
 from models.comment import Comment
 from schemas.comment_schema import CommentSchema
 from models.user import User
@@ -139,7 +139,7 @@ def get_items(prop_id):
     role_required(prop_id)
     stmt = db.select(Item).filter_by(property_id=prop_id)
     items = db.session.scalars(stmt)
-    return ItemSchema(many=True, only=['item_name', 'id']).dump(items)
+    return ItemSchema(many=True, only=['item_name', 'id']).dump(items), 200
 
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['POST'])
 @jwt_required()
@@ -157,7 +157,27 @@ def add_item(prop_id):
     db.session.add(item)
     db.session.commit()
 
-    return ItemSchema(exclude=['user']).dump(item)
+    return ItemSchema(exclude=['user']).dump(item), 201
+
+@prop_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['PUT', 'PATCH'])
+@jwt_required()
+def update_item(prop_id, item_id):
+    access_required()
+    try:
+        stmt = db.select(Item).filter_by(id=item_id)
+        item = db.session.scalar(stmt)
+        item_patch = PatchItemSchema().load(request.json)
+        if item:
+            item.item_name = item_patch.get('item_name', item.item_name)
+            item.item_desc = item_patch.get('item_desc', item.item_desc)
+            item.user_id = get_jwt_identity(),
+            item.property_id = prop_id 
+            db.session.commit()
+            return ItemSchema().dump(item), 201
+        else:
+           return {"Error": "Item not found"}, 404
+    except ValidationError as err:
+       return {"error": err.messages}
 
 @prop_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['DELETE'])
 @jwt_required()
@@ -169,6 +189,6 @@ def delete_item(prop_id, item_id):
     access_required()
     db.session.delete(item)
     db.session.commit()
-    return {}, 200
+    return {"Success": "Item has been deleted"}, 200
   else:
     return {'error': 'Item not found in this property inventory'}, 404
