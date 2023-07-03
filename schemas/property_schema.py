@@ -7,4 +7,4 @@ class PropertySchema(ma.Schema):
         fields = ('address', 'id')
 
 property_schema = PropertySchema()
-properties_schema = PropertySchema(many=True)
+properties_schema = PropertySchema(many=True) 
