@@ -1,7 +1,7 @@
 from flask import Blueprint, request, abort
 from datetime import timedelta
 from models.user import User
-from schemas.user_schema import UserSchema, user_schema
+from schemas.user_schema import UserSchema, PatchUserSchema, user_schema
 from init import db, bcrypt
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required
@@ -55,7 +55,7 @@ def all_users():
 def update_user(user_id):
   stmt = db.select(User).filter_by(id=user_id)
   user = db.session.scalar(stmt)
-  user_info = UserSchema().load(request.json)
+  user_info = PatchUserSchema().load(request.json)
   if user:
     admin_required()
     user.first_name = user_info.get('first_name', user.first_name)
@@ -69,7 +69,7 @@ def update_user(user_id):
     return UserSchema(exclude=['password']).dump(user), 201
   
   else:
-    return {'error': 'User not found'}, 404
+    return {'Error': 'User not found'}, 404
   
 @user_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
@@ -80,6 +80,6 @@ def delete_user(user_id):
   if user:
     db.session.delete(user)
     db.session.commit()
-    return {}, 200
+    return {'Success': 'User deleted'}, 200
   else:
-    return {'error': 'User not found'}, 404
+    return {'Error': 'User not found'}, 404
