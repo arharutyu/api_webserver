@@ -22,6 +22,15 @@ def check_item_in_prop(item_id, prop_id):
         return True
     else:
         return False
+    
+def check_comment_item(item_id, comment_id):
+    stmt = db.select(Comment).filter_by(item_id=item_id, id=comment_id)
+    com_item = db.session.scalar(stmt)
+    if com_item:
+        return True
+    else:
+        return False
+
 
 @comment_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['GET'])
 @jwt_required()
@@ -29,6 +38,8 @@ def all_comments(prop_id, item_id):
     role_required(prop_id)
     item = check_item_in_prop(item_id, prop_id)
     if item:
+        stmt = db.select(Item).filter_by(id=item_id)
+        item = db.session.scalar(stmt)
         return ItemSchema().dump(item), 201
     else:
         return {"error": "Item not found at this property"}, 404
@@ -65,11 +76,14 @@ def post_comment(prop_id, item_id):
 def delete_comment(prop_id, item_id, comment_id):
     access_required()
     item = check_item_in_prop(item_id, prop_id)
-    if item:
+    com_item = check_comment_item(item_id, comment_id)
+    if item and com_item:
         stmt = db.select(Comment).filter_by(id=comment_id)
         comment = db.session.scalar(stmt)
         db.session.delete(comment)
         db.session.commit()
         return {"Success": "Comment deleted successfully"}, 200
+    elif item:
+        return {"Error": "Comment not found for this item"}, 404
     else:
-        return {"error": "Item not found at this property"}, 404
+        return {"Error": "Item not found at this property"}, 404
