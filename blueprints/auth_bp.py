@@ -16,7 +16,15 @@ def admin_required():
   if not (user and user.is_admin):
     abort(401, description="You must be an admin.")
 
-def access_required(prop_id):
+def access_required():
+  user_id = get_jwt_identity()
+  stmt = db.select(User).filter_by(id=user_id)
+  user = db.session.scalar(stmt)
+
+  if not (user and (user.is_admin or user.access)):
+    abort(401, description="You don't have access to this resource.")
+
+def role_required(prop_id):
   user_id = get_jwt_identity()
   stmt = db.select(User).filter_by(id=user_id)
   user = db.session.scalar(stmt)

@@ -9,7 +9,7 @@ from models.comment import Comment
 from schemas.comment_schema import CommentSchema
 from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from blueprints.auth_bp import admin_required, access_required
+from blueprints.auth_bp import admin_required, access_required, role_required
 from datetime import date
 
 comment_bp = Blueprint('comment', __name__)
@@ -17,7 +17,7 @@ comment_bp = Blueprint('comment', __name__)
 @comment_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['GET'])
 @jwt_required()
 def all_comments(prop_id, item_id):
-    access_required(prop_id)
+    role_required(prop_id)
     stmt = db.select(Item).filter_by(id=item_id)
     items = db.session.scalars(stmt)
     return ItemSchema(many=True).dump(items)
@@ -25,7 +25,7 @@ def all_comments(prop_id, item_id):
 @comment_bp.route('/property/<int:prop_id>/inventory/<int:item_id>', methods=['POST'])
 @jwt_required()
 def post_comment(prop_id, item_id):
-    access_required(prop_id)
+    access_required()
     comment_info = CommentSchema().load(request.json)
     comment = Comment(
         comment = comment_info['comment'],

@@ -11,7 +11,7 @@ from models.user import User
 from schemas.user_schema import UserSchema
 from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from blueprints.auth_bp import admin_required, access_required
+from blueprints.auth_bp import admin_required, access_required, role_required
 from datetime import date
 
 prop_bp = Blueprint('prop', __name__)
@@ -40,6 +40,7 @@ def new_prop():
 @prop_bp.route('/property', methods=['GET'])
 @jwt_required()
 def all_props():
+    access_required()
     stmt = db.select(Property)
     props = db.session.scalars(stmt)
     return PropertySchema(many=True).dump(props)
@@ -74,6 +75,7 @@ def delete_prop(prop_id):
 @prop_bp.route('/property/<int:prop_id>', methods=['GET'])
 @jwt_required()
 def get_prop(prop_id):
+  role_required(prop_id)
   stmt = db.select(Property).filter_by(id=prop_id)
   prop = db.session.scalar(stmt)
   if prop:
@@ -84,7 +86,7 @@ def get_prop(prop_id):
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['GET'])
 @jwt_required()
 def get_roles(prop_id):
-   access_required(prop_id)
+   role_required(prop_id)
    stmt = db.select(Property).filter_by(id=prop_id)
    prop = db.session.scalar(stmt)
    
@@ -99,7 +101,7 @@ def get_roles(prop_id):
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['POST', 'PUT', 'PATCH'])
 @jwt_required()
 def add_roles(prop_id):
-    admin_required()
+    access_required()
     new_role = AddRoleSchema().load(request.json)
     propuser = PropertyUser(
             role=new_role['role'],
@@ -119,7 +121,7 @@ def delete_role(prop_id):
   stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=del_role['user_id'])
   role = db.session.scalar(stmt)
   if role:
-    admin_required()
+    access_required()
     db.session.delete(role)
     db.session.commit()
     return {}, 200
@@ -130,7 +132,7 @@ def delete_role(prop_id):
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['GET'])
 @jwt_required()
 def get_items(prop_id):
-    access_required(prop_id)
+    role_required(prop_id)
     stmt = db.select(Item).filter_by(property_id=prop_id)
     items = db.session.scalars(stmt)
     return ItemSchema(many=True, only=['item_name', 'id']).dump(items)
@@ -138,7 +140,7 @@ def get_items(prop_id):
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['POST'])
 @jwt_required()
 def add_item(prop_id):
-    access_required(prop_id)
+    access_required()
     item_info = ItemSchema().load(request.json)
     item = Item(
        item_name = item_info['item_name'],
@@ -160,7 +162,7 @@ def delete_item(prop_id, item_id):
   item = db.session.scalar(stmt)  
 
   if item:
-    admin_required()
+    access_required()
     db.session.delete(item)
     db.session.commit()
     return {}, 200

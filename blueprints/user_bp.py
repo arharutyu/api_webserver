@@ -5,7 +5,7 @@ from schemas.user_schema import UserSchema
 from init import db, bcrypt
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required
-from blueprints.auth_bp import admin_required
+from blueprints.auth_bp import admin_required, access_required
 
 user_bp = Blueprint('user', __name__)
 
@@ -38,7 +38,7 @@ def register():
 @user_bp.route('/users')
 @jwt_required()
 def all_users():
-    admin_required()
+    access_required()
     stmt = db.select(User)
     users = db.session.scalars(stmt)
     return UserSchema(many=True, exclude=['password']).dump(users)
