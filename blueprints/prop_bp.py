@@ -2,11 +2,13 @@ from flask import Blueprint, request, abort
 from models.property import Property
 from schemas.property_schema import PropertySchema
 from models.propertyuser import PropertyUser
-from schemas.role_schema import RoleSchema
+from schemas.role_schema import RoleSchema, AddRoleSchema
 from models.item import Item
 from schemas.item_schema import ItemSchema
 from models.comment import Comment
 from schemas.comment_schema import CommentSchema
+from models.user import User
+from schemas.user_schema import UserSchema
 from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from blueprints.auth_bp import admin_required, access_required
@@ -19,8 +21,7 @@ prop_bp = Blueprint('prop', __name__)
 def new_prop():
     admin_required()
     try:
-        # Parse, sanitize and validate the incoming JSON data
-        # via the schema
+        # Parse, sanitize and validate the incoming JSON data via the schema
         prop_info = PropertySchema().load(request.json)
         # Create a new Property model instance with the schema data
         prop = Property(
@@ -42,6 +43,20 @@ def all_props():
     stmt = db.select(Property)
     props = db.session.scalars(stmt)
     return PropertySchema(many=True).dump(props)
+
+@prop_bp.route('/property/<int:prop_id>', methods=['PUT', 'PATCH'])
+@jwt_required()
+def update_prop(prop_id):
+  stmt = db.select(Property).filter_by(id=prop_id)
+  prop = db.session.scalar(stmt)
+  prop_info = PropertySchema().load(request.json)
+  if prop:
+    admin_required()
+    prop.address = prop_info.get('address', prop.address)
+    db.session.commit()
+    return PropertySchema().dump(prop)
+  else:
+    return {'error': 'Property not found'}, 404
 
 @prop_bp.route('/property/<int:prop_id>', methods=['DELETE'])
 @jwt_required()
@@ -81,27 +96,26 @@ def get_roles(prop_id):
    else:
       return {'error': 'Property not found'}, 404
    
-# @prop_bp.route('/property/<int:prop_id>/roles', methods=['POST'])
-# @jwt_required()
-# def add_roles(prop_id):
-#     admin_required()
-#     try:
-#         new_role = RoleSchema().load(request.json)
-#         propuser = PropertyUser(
-#             role=new_role['role'],
-#             user=new_role['user.id'])
-            
-        
+@prop_bp.route('/property/<int:prop_id>/roles', methods=['POST'])
+@jwt_required()
+def add_roles(prop_id):
+    admin_required()
+    new_role = AddRoleSchema().load(request.json)
+    # new_user_id = new_role['user_id']
 
-#         # Add and commit the new prop
-#         db.session.add(propuser)
-#         db.session.commit()
+    # stmt = db.select(User).filter_by(id=new_user_id)
+    # new_user = db.session.scalar(stmt)
 
-#         return RoleSchema(many=True).dump(propuser), 201
-    
-#     except:
-#         return
+    propuser = PropertyUser(
+            role=new_role['role'],
+            user_id=new_role['user_id'],
+            property_id = prop_id)   
 
+        # Add and commit the new prop
+    db.session.add(propuser)
+    db.session.commit()
+
+    return RoleSchema().dump(propuser), 201
 
 
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['GET'])
