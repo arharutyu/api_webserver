@@ -16,6 +16,18 @@ def setup():
     jwt.init_app(app)
     bcrypt.init_app(app)
 
+    @app.errorhandler(401)
+    def unauthorized(err):
+        return {'error': str(err)}, 401
+    
+    @app.errorhandler(404)
+    def bad_request(err):
+        return {'error': str(err)}, 404
+            
+    @app.errorhandler(405)
+    def method_not_allowed(err):
+        return {'error': str(err)}, 405
+
     for bp in registerable_bp:
         app.register_blueprint(bp)
 
