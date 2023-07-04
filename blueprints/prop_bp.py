@@ -20,7 +20,7 @@ def prop_exists(prop_id):
     if prop:
        return True
     else:
-       abort(404, "Property does not exist")
+       abort(404, "Property not found")
 
 @prop_bp.route('/property', methods=['POST'])
 @jwt_required()
