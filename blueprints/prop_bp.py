@@ -24,9 +24,9 @@ def prop_exists(prop_id):
        abort(404, "Property not found")
 
 def role_exists(prop_id, user_id):
-    stmt = db.select(PropertyUser).filter_by(property_id=prop_id, id=user_id)
+    stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=user_id)
     role = db.session.scalars(stmt).all()
-    if len(role)<1:
+    if len(role)==0:
        return False
     else:
         return True
@@ -85,9 +85,8 @@ def delete_prop(prop_id):
 @prop_bp.route('/property/<int:prop_id>', methods=['GET'])
 @jwt_required()
 def get_prop(prop_id):
-  role_required(prop_id)
-  prop = prop_exists(prop_id) 
-  if prop:
+    role_required(prop_id)
+    prop_exists(prop_id) 
     stmt = db.select(Property).filter_by(id=prop_id)
     prop = db.session.scalar(stmt)
     return PropertySchema().dump(prop), 201
@@ -95,9 +94,8 @@ def get_prop(prop_id):
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['GET'])
 @jwt_required()
 def get_roles(prop_id):
-   role_required(prop_id)
-   prop = prop_exists(prop_id)
-   if prop:
+    role_required(prop_id)
+    prop_exists(prop_id)
     stmt = db.select(Property).filter_by(id=prop_id)
     prop = db.session.scalar(stmt)
     stmt = db.select(PropertyUser).filter_by(property_id=prop_id)
@@ -111,9 +109,9 @@ def add_roles(prop_id, user_id):
     prop_exists(prop_id)
     user_exists(user_id)
     role = role_exists(prop_id, user_id)
-    if not role:
-        stmt = db.select(Property).filter_by(id=prop_id)
-        prop = db.session.scalar(stmt)
+    if role:
+        abort(400, "User already assigned role at this property.")
+    else:
         new_role = AddRoleSchema().load(request.json)
         propuser = PropertyUser(
             role=new_role['role'],
@@ -125,45 +123,40 @@ def add_roles(prop_id, user_id):
         db.session.commit()
 
         return RoleSchema().dump(propuser), 201
-    else:
-       abort(400, "User already assigned role at this property.")
 
-@prop_bp.route('/property/<int:prop_id>/roles/<int:user_id>', methods=['PUT', 'PATCH'])
+
+@prop_bp.route('/property/<int:prop_id>/roles/<int:user_id>', methods=['PATCH', 'PUT'])
 @jwt_required()
 def update_roles(prop_id, user_id):
     access_required()
-    prop = prop_exists(prop_id)
-    user = user_exists(user_id)
+    prop_exists(prop_id)
+    user_exists(user_id)
     role = role_exists(prop_id, user_id)
-    if prop and user and role:
+    if role:
+        stmt = db.select(PropertyUser). filter_by(user_id=user_id, property_id=prop_id)
+        role = db.session.scalar(stmt)
         new_role = AddRoleSchema().load(request.json)
-        propuser = PropertyUser(
-            role=new_role['role'],
-            user_id = user_id,
-            property_id = prop_id)   
+        role.role = new_role.get('role', role.role)
                 # Add and commit the new prop
-        db.session.add(propuser)
         db.session.commit()
-
-        return RoleSchema().dump(propuser), 201
+        return RoleSchema().dump(role), 201        
+    else:
+       abort(404, "User not assigned role at this property.")
 
 @prop_bp.route('/property/<int:prop_id>/roles/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_role(prop_id, user_id):
     access_required()
-    stmt = db.select(Property).filter_by(id=prop_id)
-    prop = db.session.scalar(stmt)
-    if prop:
+    prop_exists(prop_id)
+    role = role_exists(prop_id, user_id)
+    if role:
         stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=user_id)
         role = db.session.scalar(stmt)
-        if role:
-            db.session.delete(role)
-            db.session.commit()
-            return {"Success": "User role deleted from this property"}, 200
-        else:
-            return {'error': 'User not found to have a role in this property'}, 404
+        db.session.delete(role)
+        db.session.commit()
+        return {"Success": "User role deleted from this property"}, 200
     else:
-       return {'error': 'Property not found'}, 404
+        abort(404, "User not assigned role at this property.")
     
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['GET'])
 @jwt_required()
