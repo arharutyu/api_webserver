@@ -22,6 +22,7 @@ def create_db():
 
 @cli_bp.cli.command("seed")
 def seed_db():
+    # Create instances of the User model in memory
     users = [
         User(
             first_name='Test',
@@ -48,12 +49,14 @@ def seed_db():
             access=False
         )
     ]
-
+    # Delete all existing users
     db.session.query(User).delete()
+    # Add instances from above to session
     db.session.add_all(users)
+    # Commit changes to database
     db.session.commit()
 
-    # Create an instance of the Property model in memory
+    # Create instances of the Property model in memory
     properties = [
         Property(
             address="123 Charming Ave"
@@ -65,11 +68,14 @@ def seed_db():
             address="21 Jump St"
         )
     ]
-
+    # Delete all existing properties
     db.session.query(Property).delete()
+    # Add instances from above to session
     db.session.add_all(properties)
+    # Commit changes to database
     db.session.commit()
 
+    # Create instances of the PropertyUser model in memory
     propertiesusers = [
         PropertyUser(
             role="Property Manager",
@@ -82,11 +88,14 @@ def seed_db():
             property=properties[0]
         )
     ]
-
+    # Delete all existing propertyusers
     db.session.query(PropertyUser).delete()
+    # Add instances from above to session
     db.session.add_all(propertiesusers)
+    # Commit changes to database
     db.session.commit()
 
+    # Create instances of the Item model in memory
     items = [
         Item(
             item_name = "Teapot",
@@ -110,11 +119,14 @@ def seed_db():
             property=properties[1]
         )
     ]
-
+    # Delete all existing items
     db.session.query(Item).delete()
+    # Add instances from above to session
     db.session.add_all(items)
+    # Commit changes to database
     db.session.commit()
 
+    # Create instances of the Item model in memory
     comments = [
         Comment(
             comment = "testing",
@@ -141,9 +153,11 @@ def seed_db():
             user = users[0]
         ),
     ]
-
+    # Delete all existing items
     db.session.query(Comment).delete()
+    # Add instances from above to session
     db.session.add_all(comments)
+    # Commit changes to database
     db.session.commit()
 
     print("Models seeded")
