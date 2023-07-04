@@ -74,7 +74,7 @@ def update_prop(prop_id):
 @jwt_required()
 def delete_prop(prop_id):
   admin_required()
-  prop = prop_exists()
+  prop = prop_exists(prop_id)
   if prop:
     stmt = db.select(Property).filter_by(id=prop_id)
     prop = db.session.scalar(stmt)

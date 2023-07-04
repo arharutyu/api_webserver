@@ -1,8 +1,7 @@
 from flask import Blueprint, request, abort
 from models.user import User
-from schemas.user_schema import UserSchema, PatchUserSchema, user_schema
+from schemas.user_schema import UserSchema, PatchUserSchema
 from init import db, bcrypt
-from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required
 from blueprints.auth_bp import admin_required, access_required
 

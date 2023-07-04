@@ -1,7 +1,6 @@
 from init import ma
 from marshmallow import fields, validates_schema
 from marshmallow.exceptions import ValidationError
-from marshmallow.validate import OneOf
 
 VALID_ROLES = ['Unassigned', 'Property Manager', 'Tenant']
 

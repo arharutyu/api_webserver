@@ -4,7 +4,6 @@ from models.user import User
 from models.propertyuser import PropertyUser
 from schemas.user_schema import UserSchema
 from init import db, bcrypt
-from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import create_access_token, get_jwt_identity
 
 auth_bp = Blueprint('auth', __name__)

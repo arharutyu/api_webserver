@@ -33,9 +33,17 @@ def seed_db():
         ),
         User(
             first_name='Test',
-            last_name='User',
-            email='user@test.com',
+            last_name='PM',
+            email='pm@test.com',
             password=bcrypt.generate_password_hash('user').decode('utf-8'),
+            is_admin=False,
+            access=True
+        ),
+        User(
+            first_name='Flynn',
+            last_name='Rider',
+            email='flynn@test.com',
+            password=bcrypt.generate_password_hash('eugene').decode('utf-8'),
             is_admin=False,
             access=False
         )
@@ -50,7 +58,9 @@ def seed_db():
         Property(
             address="123 Charming Ave"
         ),
-
+        Property(
+            address="The Tower in the Woods"
+        ),
         Property(
             address="21 Jump St"
         )
@@ -96,8 +106,8 @@ def seed_db():
             item_name = "Sacred Waterbending Scroll",
             item_desc = "Signs of wear.",
             date_created = date.today(),
-            user=users[0],
-            property=properties[0]
+            user=users[1],
+            property=properties[1]
         )
     ]
 

@@ -1,5 +1,5 @@
 from init import ma 
-from marshmallow.validate import Length, Regexp, And
+from marshmallow.validate import Length, Regexp
 from marshmallow import fields
 
 class UserSchema(ma.Schema):
