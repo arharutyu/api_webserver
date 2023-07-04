@@ -18,12 +18,16 @@ def setup():
     jwt.init_app(app)
     bcrypt.init_app(app)
 
+    @app.errorhandler(400)
+    def bad_request(err):
+        return {'error': str(err)}, 400
+
     @app.errorhandler(401)
     def unauthorized(err):
         return {'error': str(err)}, 401
     
     @app.errorhandler(404)
-    def bad_request(err):
+    def not_found(err):
         return {'error': str(err)}, 404
             
     @app.errorhandler(405)
