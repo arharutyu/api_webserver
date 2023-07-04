@@ -2,6 +2,7 @@ from flask import Flask
 from os import environ
 from init import db, ma, bcrypt, jwt
 from blueprints import registerable_bp
+from marshmallow import ValidationError
 
 def setup():
     app = Flask(__name__)
@@ -27,6 +28,10 @@ def setup():
     @app.errorhandler(405)
     def method_not_allowed(err):
         return {'error': str(err)}, 405
+    
+    @app.errorhandler(ValidationError)
+    def validation_error(err):
+        return {'error': err.__dict__['messages']}, 400
 
     for bp in registerable_bp:
         app.register_blueprint(bp)
