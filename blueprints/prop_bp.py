@@ -10,6 +10,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from blueprints.auth_bp import admin_required, access_required, role_required
 from datetime import date
 from blueprints.comment_bp import check_item_in_prop
+from blueprints.user_bp import user_exists
 
 
 prop_bp = Blueprint('prop', __name__)
@@ -21,6 +22,14 @@ def prop_exists(prop_id):
        return True
     else:
        abort(404, "Property not found")
+
+def role_exists(prop_id, user_id):
+    stmt = db.select(PropertyUser).filter_by(property_id=prop_id, id=user_id)
+    role = db.session.scalars(stmt).all()
+    if len(role)<1:
+       return False
+    else:
+        return True
 
 @prop_bp.route('/property', methods=['POST'])
 @jwt_required()
@@ -95,20 +104,43 @@ def get_roles(prop_id):
     propuser = db.session.scalars(stmt)
     return [PropertySchema().dump(prop), RoleSchema(many=True).dump(propuser)]
    
-@prop_bp.route('/property/<int:prop_id>/roles', methods=['POST', 'PUT', 'PATCH'])
+@prop_bp.route('/property/<int:prop_id>/roles/<int:user_id>', methods=['POST'])
 @jwt_required()
-def add_roles(prop_id):
+def add_roles(prop_id, user_id):
     access_required()
-    prop = prop_exists(prop_id)
-    if prop:
+    prop_exists(prop_id)
+    user_exists(user_id)
+    role = role_exists(prop_id, user_id)
+    if not role:
         stmt = db.select(Property).filter_by(id=prop_id)
         prop = db.session.scalar(stmt)
         new_role = AddRoleSchema().load(request.json)
         propuser = PropertyUser(
             role=new_role['role'],
-            user_id=new_role['user_id'],
+            user_id = user_id,
             property_id = prop_id)   
 
+                # Add and commit the new prop
+        db.session.add(propuser)
+        db.session.commit()
+
+        return RoleSchema().dump(propuser), 201
+    else:
+       abort(400, "User already assigned role at this property.")
+
+@prop_bp.route('/property/<int:prop_id>/roles/<int:user_id>', methods=['PUT', 'PATCH'])
+@jwt_required()
+def update_roles(prop_id, user_id):
+    access_required()
+    prop = prop_exists(prop_id)
+    user = user_exists(user_id)
+    role = role_exists(prop_id, user_id)
+    if prop and user and role:
+        new_role = AddRoleSchema().load(request.json)
+        propuser = PropertyUser(
+            role=new_role['role'],
+            user_id = user_id,
+            property_id = prop_id)   
                 # Add and commit the new prop
         db.session.add(propuser)
         db.session.commit()
