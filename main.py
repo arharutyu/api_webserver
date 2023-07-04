@@ -3,6 +3,7 @@ from os import environ
 from init import db, ma, bcrypt, jwt
 from blueprints import registerable_bp
 from marshmallow import ValidationError
+from sqlalchemy.exc import IntegrityError
 
 def setup():
     app = Flask(__name__)
@@ -32,6 +33,10 @@ def setup():
     @app.errorhandler(ValidationError)
     def validation_error(err):
         return {'error': err.__dict__['messages']}, 400
+    
+    @app.errorhandler(IntegrityError)
+    def validation_error(err):
+        return {'error': f"Integrity Error details: {err.__dict__['orig']}"}, 404
 
     for bp in registerable_bp:
         app.register_blueprint(bp)
