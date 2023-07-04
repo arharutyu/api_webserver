@@ -5,17 +5,26 @@ from models.propertyuser import PropertyUser
 from schemas.role_schema import RoleSchema, AddRoleSchema
 from models.item import Item
 from schemas.item_schema import ItemSchema, PatchItemSchema
-from models.comment import Comment
-from schemas.comment_schema import CommentSchema
-from models.user import User
-from schemas.user_schema import UserSchema
+# from models.comment import Comment
+# from schemas.comment_schema import CommentSchema
+# from models.user import User
+# from schemas.user_schema import UserSchema
 from init import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from blueprints.auth_bp import admin_required, access_required, role_required
 from datetime import date
 from marshmallow import ValidationError
 
+
 prop_bp = Blueprint('prop', __name__)
+
+def prop_exists(prop_id):
+    stmt = db.select(Property).filter_by(id=prop_id)
+    prop = db.session.scalar(stmt)
+    if prop:
+       return True
+    else:
+       abort(404, "Property does not exist")
 
 @prop_bp.route('/property', methods=['POST'])
 @jwt_required()
@@ -35,8 +44,8 @@ def new_prop():
 
         return PropertySchema().dump(prop), 201
     
-    except:
-        return {'error': 'Something went wrong'}
+    except ValidationError as err:
+        return {'error': err.messages}, 400
 
 @prop_bp.route('/property', methods=['GET'])
 @jwt_required()
@@ -69,7 +78,7 @@ def delete_prop(prop_id):
     admin_required()
     db.session.delete(prop)
     db.session.commit()
-    return {}, 200
+    return {'success': 'Property successfully deleted'}, 200
   else:
     return {'error': 'Property not found'}, 404
   
@@ -77,12 +86,14 @@ def delete_prop(prop_id):
 @jwt_required()
 def get_prop(prop_id):
   role_required(prop_id)
-  stmt = db.select(Property).filter_by(id=prop_id)
-  prop = db.session.scalar(stmt)
+  prop = prop_exists(prop_id) 
+#   stmt = db.select(Property).filter_by(id=prop_id)
+#   prop = db.session.scalar(stmt)
   if prop:
     return PropertySchema().dump(prop), 201
   else:
-    return {'error': 'Property not found'}, 404
+     return f'{prop} test'
+#     return {'error': 'Property not found'}, 404
   
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['GET'])
 @jwt_required()
@@ -102,45 +113,58 @@ def get_roles(prop_id):
 @prop_bp.route('/property/<int:prop_id>/roles', methods=['POST', 'PUT', 'PATCH'])
 @jwt_required()
 def add_roles(prop_id):
-    try:
-        access_required()
-        new_role = AddRoleSchema().load(request.json)
-        propuser = PropertyUser(
-                role=new_role['role'],
-                user_id=new_role['user_id'],
-                property_id = prop_id)   
-
-            # Add and commit the new prop
-        db.session.add(propuser)
-        db.session.commit()
-
-        return RoleSchema().dump(propuser), 201
-    except ValidationError as err:
-       return {"error": err.messages}
-
-@prop_bp.route('/property/<int:prop_id>/roles', methods=['DELETE'])
-@jwt_required()
-def delete_role(prop_id):
-  del_role = AddRoleSchema(only=["user_id"]).load(request.json)
-  stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=del_role['user_id'])
-  role = db.session.scalar(stmt)
-  if role:
     access_required()
-    db.session.delete(role)
-    db.session.commit()
-    return {"Success": "User role deleted from this property"}, 200
-  else:
-    return {'error': 'User not found to have a role in this property'}, 404
+    stmt = db.select(Property).filter_by(id=prop_id)
+    prop = db.session.scalar(stmt)
+    if prop:
+        try:
+            new_role = AddRoleSchema().load(request.json)
+            propuser = PropertyUser(
+                    role=new_role['role'],
+                    user_id=new_role['user_id'],
+                    property_id = prop_id)   
 
+                # Add and commit the new prop
+            db.session.add(propuser)
+            db.session.commit()
 
+            return RoleSchema().dump(propuser), 201
+        except ValidationError as err:
+            return {"error": err.messages}
+    else: 
+       return {'error': 'Property not found'}, 404
+
+@prop_bp.route('/property/<int:prop_id>/roles/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_role(prop_id, user_id):
+    access_required()
+    stmt = db.select(Property).filter_by(id=prop_id)
+    prop = db.session.scalar(stmt)
+    if prop:
+        stmt = db.select(PropertyUser).filter_by(property_id=prop_id, user_id=user_id)
+        role = db.session.scalar(stmt)
+        if role:
+            db.session.delete(role)
+            db.session.commit()
+            return {"Success": "User role deleted from this property"}, 200
+        else:
+            return {'error': 'User not found to have a role in this property'}, 404
+    else:
+       return {'error': 'Property not found'}, 404
+    
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['GET'])
 @jwt_required()
 def get_items(prop_id):
     role_required(prop_id)
-    stmt = db.select(Item).filter_by(property_id=prop_id)
-    items = db.session.scalars(stmt)
-    return ItemSchema(many=True, only=['item_name', 'id']).dump(items), 200
-
+    stmt = db.select(Property).filter_by(id=prop_id)
+    prop = db.session.scalar(stmt)
+    if prop:
+        stmt = db.select(Item).filter_by(property_id=prop_id)
+        items = db.session.scalars(stmt)
+        return ItemSchema(many=True, only=['item_name', 'id']).dump(items), 200
+    else:
+       return {'error': 'Property not found'}, 404
+    
 @prop_bp.route('/property/<int:prop_id>/inventory', methods=['POST'])
 @jwt_required()
 def add_item(prop_id):
