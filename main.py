@@ -9,9 +9,7 @@ def setup():
     app = Flask(__name__)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DB_URI')
-    app.config['JWT_SECRET_KEY'] = "Mushu is the Best"
-    
-    # environ.get('JWT_KEY')
+    app.config['JWT_SECRET_KEY'] = environ.get('JWT_KEY')
 
     db.init_app(app)
     ma.init_app(app)
