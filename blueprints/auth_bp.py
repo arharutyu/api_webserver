@@ -29,7 +29,7 @@ def role_required(prop_id):
   stmt = db.select(User).filter_by(id=user_id)
   user = db.session.scalar(stmt)
 
-  stmt = db.Select(PropertyUser).filter_by(property_id=prop_id, id=user_id)
+  stmt = db.Select(PropertyUser).filter_by(property_id=prop_id, user_id=user_id)
   role = db.session.scalars(stmt).all()
 
   if not (user and (user.is_admin or user.access or len(role)>0)):
