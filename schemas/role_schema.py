@@ -16,7 +16,7 @@ class RoleSchema(ma.Schema):
 class AddRoleSchema(ma.Schema):
   user = fields.Nested('UserSchema', only=['id'])
   property = fields.Nested('PropertySchema')
-  role = fields.String()
+  role = fields.String(required=True)
 
   @validates_schema()
   def validate_role(self, data, **kwargs):
