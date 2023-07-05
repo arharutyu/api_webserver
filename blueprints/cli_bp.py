@@ -28,7 +28,7 @@ def seed_db():
             first_name='Test',
             last_name='Admin',
             email='admin@test.com',
-            password=bcrypt.generate_password_hash('admin').decode('utf-8'),
+            password=bcrypt.generate_password_hash('admin12!').decode('utf-8'),
             is_admin=True,
             access = True
         ),
@@ -36,7 +36,7 @@ def seed_db():
             first_name='Test',
             last_name='PM',
             email='pm@test.com',
-            password=bcrypt.generate_password_hash('user').decode('utf-8'),
+            password=bcrypt.generate_password_hash('user123!').decode('utf-8'),
             is_admin=False,
             access=True
         ),
@@ -44,7 +44,7 @@ def seed_db():
             first_name='Flynn',
             last_name='Rider',
             email='flynn@test.com',
-            password=bcrypt.generate_password_hash('eugene').decode('utf-8'),
+            password=bcrypt.generate_password_hash('eugene1!').decode('utf-8'),
             is_admin=False,
             access=False
         )
